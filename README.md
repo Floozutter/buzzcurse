@@ -1,2 +1,2 @@
 # buzzcurse
-fill this in when sober uwu
+get a buzz on mouse events!

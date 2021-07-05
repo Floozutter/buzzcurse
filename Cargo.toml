@@ -1,0 +1,7 @@
+[package]
+name = "buzzcurse"
+version = "0.1.0"
+authors = ["Floozutter <me@floozutter.site>"]
+edition = "2018"
+
+[dependencies]

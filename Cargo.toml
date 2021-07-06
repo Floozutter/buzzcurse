@@ -5,3 +5,4 @@ authors = ["Floozutter <me@floozutter.site>"]
 edition = "2018"
 
 [dependencies]
+buttplug = "4.0"

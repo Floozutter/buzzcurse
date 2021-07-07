@@ -6,3 +6,4 @@ edition = "2018"
 
 [dependencies]
 buttplug = "4.0"
+rdev = "0.5"

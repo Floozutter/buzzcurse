@@ -367,6 +367,7 @@ name = "buzzcurse"
 version = "0.1.0"
 dependencies = [
  "buttplug",
+ "clap",
  "rdev",
 ]
 

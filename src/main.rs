@@ -49,12 +49,19 @@ async fn run() -> Result<(), Box<dyn Error>> {
     let devices = client.devices();
     let speed_a = Arc::new(Mutex::new(0.0 as f64));
     let speed_b = speed_a.clone();
+    let mut last_pos: Option<(f64, f64)> = None;
     let _held = ();  // TODO
-    let _pos = ();  // TODO
     tokio::spawn(async move {
         listen(move |event| {
             *speed_a.lock().unwrap() += match event.event_type {
-                EventType::MouseMove { x: _, y: _ } => 0.01,
+                EventType::MouseMove { x, y } => {
+                    let ret = match last_pos {
+                        None => 0.0,
+                        Some((a, b)) => ((x - a).powi(2) + (y - b).powi(2)).sqrt() / 1000.0,
+                    };
+                    last_pos = Some((x, y));
+                    ret
+                },
                 _ => 0.0,
             };
         }).unwrap();

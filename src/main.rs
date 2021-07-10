@@ -47,14 +47,14 @@ async fn run() -> Result<(), Box<dyn Error>> {
     scan_handler.await?;
     // listen to mouse events
     let devices = client.devices();
-    let speed_a = Arc::new(Mutex::new(0.0 as f64));
-    let speed_b = speed_a.clone();
+    let power_a = Arc::new(Mutex::new(0.0 as f64));
+    let power_b = power_a.clone();
     let held_a = Arc::new(Mutex::new(HashMap::<Button, bool>::new()));  // TOUSE
     let _held_b = held_a.clone();  // TOUSE
     let mut last_pos: Option<(f64, f64)> = None;
     tokio::spawn(async move {
         listen(move |event| {
-            *speed_a.lock().unwrap() += match event.event_type {
+            *power_a.lock().unwrap() += match event.event_type {
                 EventType::MouseMove { x, y } => {
                     let ret = match last_pos {
                         None => 0.0,
@@ -69,15 +69,16 @@ async fn run() -> Result<(), Box<dyn Error>> {
     });
     tokio::spawn(async move {
         loop {
-            let speed = {
-                let mut speed = speed_b.lock().unwrap();
-                let clamped = (*speed).max(0.0).min(1.0);
-                *speed = (clamped - 0.25).max(0.0);
+            let power = {
+                let mut power = power_b.lock().unwrap();
+                let clamped = (*power).max(0.0).min(1.5);
+                *power = (clamped - 0.25).max(0.0);
                 clamped
             };
+            let speed = power.min(1.0);
             println!(
-                "vibration speed: {:.5}  [{:<5}]",
-                speed, "=".repeat((speed * 5.0) as usize)
+                "power: {:.5}  |  vibration speed: {:.5}  [{:<5}]",
+                power, speed, "=".repeat((speed * 5.0) as usize)
             );
             for dev in devices.clone() {
                 tokio::spawn(async move {

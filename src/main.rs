@@ -72,6 +72,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
                     last_pos = Some((x, y));
                     ret
                 },
+                EventType::Wheel { delta_x, delta_y } => (delta_x.abs() + delta_y.abs()) as f64 / 5.0,
                 EventType::ButtonPress(b) => {
                     (*held_a.lock().unwrap()).insert(number_button(b), true);
                     0.0

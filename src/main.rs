@@ -41,7 +41,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
     client.connect_in_process(&ButtplugServerOptions::default()).await?;
     client.start_scanning().await?;
     let scan_handler = tokio::spawn(handle_scanning(event_stream));
-    println!("\nscanning for devices! press enter at any point to stop scanning and connect MIDI.");
+    println!("\nscanning for devices! press enter at any point to stop scanning and start listening for mouse events.");
     BufReader::new(io::stdin()).lines().next_line().await?;
     client.stop_scanning().await?;
     scan_handler.await?;

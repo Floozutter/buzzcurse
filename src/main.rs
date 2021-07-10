@@ -1,4 +1,4 @@
-use rdev::{listen, EventType};
+use rdev::{listen, EventType, Button};
 use buttplug::{
     client::{
         ButtplugClient, ButtplugClientEvent, ButtplugClientDeviceMessageType, 
@@ -10,7 +10,7 @@ use tokio::io::{self, AsyncBufReadExt, BufReader};
 use futures::{StreamExt, Stream};
 use futures_timer::Delay;
 use std::sync::{Arc, Mutex};
-use std::{error::Error, time::Duration};
+use std::{error::Error, time::Duration, collections::HashMap};
 
 async fn handle_scanning(mut event_stream: impl Stream<Item = ButtplugClientEvent> + Unpin) {
     loop {
@@ -49,8 +49,9 @@ async fn run() -> Result<(), Box<dyn Error>> {
     let devices = client.devices();
     let speed_a = Arc::new(Mutex::new(0.0 as f64));
     let speed_b = speed_a.clone();
+    let held_a = Arc::new(Mutex::new(HashMap::<Button, bool>::new()));  // TOUSE
+    let _held_b = held_a.clone();  // TOUSE
     let mut last_pos: Option<(f64, f64)> = None;
-    let _held = ();  // TODO
     tokio::spawn(async move {
         listen(move |event| {
             *speed_a.lock().unwrap() += match event.event_type {

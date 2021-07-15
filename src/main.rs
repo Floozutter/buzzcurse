@@ -58,7 +58,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
     let devices = client.devices();
     let event_power_a = Arc::new(Mutex::new(0.0 as f64));
     let event_power_b = event_power_a.clone();
-    let held_a = Arc::new(Mutex::new(HashMap::<i32, bool>::new()));
+    let held_a = Arc::new(Mutex::new(HashMap::<i32, bool>::new()));  // TODO: use set instead
     let held_b = held_a.clone();
     let mut last_pos: Option<(f64, f64)> = None;
     tokio::spawn(async move {

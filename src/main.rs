@@ -10,7 +10,7 @@ use tokio::io::{self, AsyncBufReadExt, BufReader};
 use futures::{StreamExt, Stream};
 use futures_timer::Delay;
 use std::sync::{Arc, Mutex};
-use std::{error::Error, time::Duration, collections::HashMap};
+use std::{error::Error, time::Duration, collections::HashSet};
 
 fn number_button(button: Button) -> i32 {
     match button {
@@ -58,7 +58,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
     let devices = client.devices();
     let event_power_a = Arc::new(Mutex::new(0.0 as f64));
     let event_power_b = event_power_a.clone();
-    let held_a = Arc::new(Mutex::new(HashMap::<i32, bool>::new()));  // TODO: use set instead
+    let held_a = Arc::new(Mutex::new(HashSet::<i32>::new()));
     let held_b = held_a.clone();
     let mut last_pos: Option<(f64, f64)> = None;
     tokio::spawn(async move {
@@ -74,11 +74,11 @@ async fn run() -> Result<(), Box<dyn Error>> {
                 },
                 EventType::Wheel { delta_x, delta_y } => (delta_x.abs() + delta_y.abs()) as f64 / 5.0,
                 EventType::ButtonPress(b) => {
-                    (*held_a.lock().unwrap()).insert(number_button(b), true);
+                    (*held_a.lock().unwrap()).insert(number_button(b));
                     0.0
                 },
                 EventType::ButtonRelease(b) => {
-                    (*held_a.lock().unwrap()).insert(number_button(b), false);
+                    (*held_a.lock().unwrap()).remove(&number_button(b));
                     0.0
                 },
                 _ => 0.0,
@@ -93,7 +93,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
                 *event_power = (clamped - 0.25).max(0.0);
                 clamped
             };
-            let held_power = (*held_b.lock().unwrap()).values().map(|b| if *b { 0.5 } else { 0.0 }).sum::<f64>();
+            let held_power = (*held_b.lock().unwrap()).len() as f64 * 0.5;
             let power = (event_power + held_power).max(0.0).min(1.5);
             let speed = power.min(1.0);
             println!(

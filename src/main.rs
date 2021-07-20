@@ -12,6 +12,7 @@ use futures_timer::Delay;
 use std::sync::{Arc, Mutex};
 use std::{error::Error, time::Duration, collections::HashSet};
 
+// TODO: replace with hashable newtype of rdev::Button
 fn number_button(button: Button) -> i32 {
     match button {
         Button::Left => -1,

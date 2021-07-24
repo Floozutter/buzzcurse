@@ -1,4 +1,5 @@
 mod botton;
+use botton::Botton;
 use rdev::{listen, EventType, Button};
 use buttplug::{
     client::{

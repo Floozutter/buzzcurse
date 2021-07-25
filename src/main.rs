@@ -1,6 +1,6 @@
 mod botton;
 use botton::Botton;
-use rdev::{listen, EventType, Button};
+use rdev::{listen, EventType};
 use buttplug::{
     client::{
         ButtplugClient, ButtplugClientEvent, ButtplugClientDeviceMessageType, 
@@ -13,16 +13,6 @@ use futures::{StreamExt, Stream};
 use futures_timer::Delay;
 use std::sync::{Arc, Mutex};
 use std::{error::Error, time::Duration, collections::HashSet};
-
-// TODO: replace with hashable newtype of rdev::Button
-fn number_button(button: Button) -> i32 {
-    match button {
-        Button::Left => -1,
-        Button::Right => -2,
-        Button::Middle => -3,
-        Button::Unknown(n) => n.into(),
-    }
-}
 
 async fn handle_scanning(mut event_stream: impl Stream<Item = ButtplugClientEvent> + Unpin) {
     loop {
@@ -61,7 +51,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
     let devices = client.devices();
     let event_power_a = Arc::new(Mutex::new(0.0 as f64));
     let event_power_b = event_power_a.clone();
-    let held_a = Arc::new(Mutex::new(HashSet::<i32>::new()));
+    let held_a = Arc::new(Mutex::new(HashSet::<Botton>::new()));
     let held_b = held_a.clone();
     let mut last_pos: Option<(f64, f64)> = None;
     tokio::spawn(async move {
@@ -77,11 +67,11 @@ async fn run() -> Result<(), Box<dyn Error>> {
                 },
                 EventType::Wheel { delta_x, delta_y } => (delta_x.abs() + delta_y.abs()) as f64 / 5.0,
                 EventType::ButtonPress(b) => {
-                    (*held_a.lock().unwrap()).insert(number_button(b));
+                    (*held_a.lock().unwrap()).insert(Botton(b));
                     0.0
                 },
                 EventType::ButtonRelease(b) => {
-                    (*held_a.lock().unwrap()).remove(&number_button(b));
+                    (*held_a.lock().unwrap()).remove(&Botton(b));
                     0.0
                 },
                 _ => 0.0,

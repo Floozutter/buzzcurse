@@ -48,7 +48,6 @@ async fn run() -> Result<(), Box<dyn Error>> {
     client.stop_scanning().await?;
     scan_handler.await?;
     // listen to mouse events
-    let devices = client.devices();
     let event_power_a = Arc::new(Mutex::new(0.0 as f64));
     let event_power_b = event_power_a.clone();
     let held_a = Arc::new(Mutex::new(HashSet::<Botton>::new()));
@@ -78,6 +77,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
             };
         }).unwrap();
     });
+    let devices = client.devices();
     tokio::spawn(async move {
         loop {
             let event_power = {

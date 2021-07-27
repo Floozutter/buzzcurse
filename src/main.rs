@@ -48,7 +48,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
     client.stop_scanning().await?;
     scan_handler.await?;
     // listen to mouse events
-    let event_power_a = Arc::new(Mutex::new(0.0 as f64));
+    let event_power_a = Arc::new(Mutex::new(0.0));
     let event_power_b = event_power_a.clone();
     let held_a = Arc::new(Mutex::new(HashSet::<Botton>::new()));
     let held_b = held_a.clone();

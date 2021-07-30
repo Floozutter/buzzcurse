@@ -11,6 +11,7 @@ use buttplug::{
 use tokio::io::{self, AsyncBufReadExt, BufReader};
 use futures::{StreamExt, Stream};
 use futures_timer::Delay;
+use std::thread;
 use std::sync::{Arc, Mutex};
 use std::{error::Error, time::Duration, collections::HashSet};
 
@@ -53,7 +54,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
     let held_a = Arc::new(Mutex::new(HashSet::<Botton>::new()));
     let held_b = held_a.clone();
     let mut last_pos: Option<(f64, f64)> = None;
-    tokio::spawn(async move {
+    thread::spawn(move || {
         listen(move |event| {
             *event_power_a.lock().unwrap() += match event.event_type {
                 EventType::MouseMove { x, y } => {

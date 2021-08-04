@@ -112,10 +112,16 @@ async fn run() -> Result<(), Box<dyn Error>> {
 }
 
 fn main() {
+    // get command-line arguments
     let _matches = clap::App::new("buzzcurse")
         .version("0.1")
         .about("get a buzz on mouse events!")
         .get_matches();
+    // initialize shared state
+    //...
+    // spawn listener thread
+    //...
+    // start async runtime
     let runtime = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()

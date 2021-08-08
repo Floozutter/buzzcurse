@@ -6,6 +6,7 @@ pub struct Botton(pub rdev::Button);
 
 impl Eq for Botton {}
 
+#[allow(clippy::derive_hash_xor_eq)]
 impl Hash for Botton {
     fn hash<H: Hasher>(&self, state: &mut H) {
         discriminant(&self.0).hash(state);

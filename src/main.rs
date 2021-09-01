@@ -117,17 +117,20 @@ fn main() {
         .version("0.1")
         .about("get a buzz on mouse events!")
         .get_matches();
-    // initialize shared state
-    //...
-    // spawn listener thread
-    //...
-    // start async runtime
-    let runtime = tokio::runtime::Builder::new_multi_thread()
-        .enable_all()
-        .build()
-        .unwrap();
-    match runtime.block_on(run()) {
+    // connect mouse events to Buttplug
+    let ending: Result<(), Box<dyn Error>> = (|| -> Result<(), Box<dyn Error>> {
+        // initialize shared state
+        //...
+        // spawn listener thread
+        //...
+        // start async runtime
+        let runtime = tokio::runtime::Builder::new_multi_thread().enable_all().build()?;
+        runtime.block_on(run())?;
+        Ok(())
+    })();
+    // say goodbye
+    match ending {
         Ok(()) => { println!("bye-bye! >:3c"); },
-        Err(e) => { eprintln!("error: {}!", e); },
+        Err(e) => { eprintln!("error: {}", e); },
     };
 }

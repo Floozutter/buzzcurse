@@ -124,7 +124,9 @@ fn main() {
         // spawn listener thread
         //...
         // start async runtime
-        let runtime = tokio::runtime::Builder::new_multi_thread().enable_all().build()?;
+        let runtime = tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()?;
         runtime.block_on(run())?;
         Ok(())
     })();

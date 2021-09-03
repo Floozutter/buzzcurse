@@ -34,7 +34,7 @@ async fn handle_scanning(mut event_stream: impl Stream<Item = ButtplugClientEven
                 println!("something happened!");
             },
         }
-    };
+    }
 }
 
 async fn run() -> Result<(), Box<dyn Error>> {

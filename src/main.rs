@@ -134,5 +134,5 @@ fn main() {
     match ending {
         Ok(()) => { println!("bye-bye! >:3c"); },
         Err(e) => { eprintln!("error: {}", e); },
-    };
+    }
 }

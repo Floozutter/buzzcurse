@@ -37,7 +37,10 @@ async fn handle_scanning(mut event_stream: impl Stream<Item = ButtplugClientEven
     }
 }
 
-async fn run() -> Result<(), Box<dyn Error>> {
+async fn run(
+    event_power: Arc<Mutex<f64>>,
+    held: Arc<Mutex<HashSet<Botton>>>,
+) -> Result<(), Box<dyn Error>> {
     // connect Buttplug devices
     let client = ButtplugClient::new("buzzcurse buttplug client");
     let event_stream = client.event_stream();
@@ -49,45 +52,16 @@ async fn run() -> Result<(), Box<dyn Error>> {
     client.stop_scanning().await?;
     scan_handler.await?;
     // listen to mouse events
-    let event_power_a = Arc::new(Mutex::new(0.0));
-    let event_power_b = event_power_a.clone();
-    let held_a = Arc::new(Mutex::new(HashSet::<Botton>::new()));
-    let held_b = held_a.clone();
-    let mut last_pos: Option<(f64, f64)> = None;
-    thread::spawn(move || {
-        listen(move |event| {
-            *event_power_a.lock().unwrap() += match event.event_type {
-                EventType::MouseMove { x, y } => {
-                    let ret = match last_pos {
-                        None => 0.0,
-                        Some((a, b)) => ((x - a).powi(2) + (y - b).powi(2)).sqrt() / 1000.0,
-                    };
-                    last_pos = Some((x, y));
-                    ret
-                },
-                EventType::Wheel { delta_x, delta_y } => (delta_x.abs() + delta_y.abs()) as f64 / 5.0,
-                EventType::ButtonPress(b) => {
-                    (*held_a.lock().unwrap()).insert(Botton(b));
-                    0.0
-                },
-                EventType::ButtonRelease(b) => {
-                    (*held_a.lock().unwrap()).remove(&Botton(b));
-                    0.0
-                },
-                _ => 0.0,
-            };
-        }).unwrap();
-    });
     let devices = client.devices();
     tokio::spawn(async move {
         loop {
             let event_power = {
-                let mut event_power = event_power_b.lock().unwrap();
+                let mut event_power = event_power.lock().unwrap();
                 let clamped = (*event_power).max(0.0).min(1.5);
                 *event_power = (clamped - 0.25).max(0.0);
                 clamped
             };
-            let held_power = (*held_b.lock().unwrap()).len() as f64 * 0.5;
+            let held_power = (*held.lock().unwrap()).len() as f64 * 0.5;
             let power = (event_power + held_power).max(0.0).min(1.5);
             let speed = power.min(1.0);
             println!(
@@ -120,14 +94,41 @@ fn main() {
     // connect mouse events to Buttplug
     let ending: Result<(), Box<dyn Error>> = (|| -> Result<(), Box<dyn Error>> {
         // initialize shared state
-        //...
+        let event_power_a = Arc::new(Mutex::new(0.0));
+        let event_power_b = event_power_a.clone();
+        let held_a = Arc::new(Mutex::new(HashSet::<Botton>::new()));
+        let held_b = held_a.clone();
         // spawn listener thread
-        //...
+        thread::spawn(move || {
+            let mut last_pos: Option<(f64, f64)> = None;
+            listen(move |event| {
+                *event_power_a.lock().unwrap() += match event.event_type {
+                    EventType::MouseMove { x, y } => {
+                        let ret = match last_pos {
+                            None => 0.0,
+                            Some((a, b)) => ((x - a).powi(2) + (y - b).powi(2)).sqrt() / 1000.0,
+                        };
+                        last_pos = Some((x, y));
+                        ret
+                    },
+                    EventType::Wheel { delta_x, delta_y } => (delta_x.abs() + delta_y.abs()) as f64 / 5.0,
+                    EventType::ButtonPress(b) => {
+                        (*held_a.lock().unwrap()).insert(Botton(b));
+                        0.0
+                    },
+                    EventType::ButtonRelease(b) => {
+                        (*held_a.lock().unwrap()).remove(&Botton(b));
+                        0.0
+                    },
+                    _ => 0.0,
+                };
+            }).unwrap();
+        });
         // start async runtime
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .enable_all()
             .build()?;
-        runtime.block_on(run())?;
+        runtime.block_on(run(event_power_b, held_b))?;
         Ok(())
     })();
     // say goodbye

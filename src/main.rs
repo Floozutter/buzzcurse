@@ -124,6 +124,7 @@ fn main() {
                 };
             }).unwrap();
         });
+        // to-do: check if listen worked
         // start async runtime
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .enable_all()
